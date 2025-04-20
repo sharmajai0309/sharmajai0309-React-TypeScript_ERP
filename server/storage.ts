@@ -405,4 +405,10 @@ export class MemStorage implements IStorage {
   }
 }
 
+import { DatabaseStorage } from './database-storage';
+
+// Uncomment this line to use MySQL database storage 
+// export const storage = new DatabaseStorage();
+
+// For local development without MySQL available, use MemStorage
 export const storage = new MemStorage();
