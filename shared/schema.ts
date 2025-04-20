@@ -1,105 +1,105 @@
-import { pgTable, text, serial, integer, boolean, timestamp, json, uniqueIndex } from "drizzle-orm/pg-core";
+import { mysqlTable, varchar, int, boolean, datetime, json, text, mysqlEnum, timestamp, index, unique } from "drizzle-orm/mysql-core";
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod";
 
 // Users table with role-based access
-export const users = pgTable("users", {
-  id: serial("id").primaryKey(),
-  username: text("username").notNull().unique(),
-  password: text("password").notNull(),
-  firstName: text("first_name").notNull(),
-  lastName: text("last_name").notNull(),
-  email: text("email").notNull().unique(),
-  role: text("role", { enum: ["admin", "teacher", "student"] }).notNull().default("student"),
-  avatarUrl: text("avatar_url"),
+export const users = mysqlTable("users", {
+  id: int("id").primaryKey().autoincrement(),
+  username: varchar("username", { length: 50 }).notNull().unique(),
+  password: varchar("password", { length: 100 }).notNull(),
+  firstName: varchar("first_name", { length: 50 }).notNull(),
+  lastName: varchar("last_name", { length: 50 }).notNull(),
+  email: varchar("email", { length: 100 }).notNull().unique(),
+  role: mysqlEnum("role", ["admin", "teacher", "student"]).notNull().default("student"),
+  avatarUrl: varchar("avatar_url", { length: 255 }),
   createdAt: timestamp("created_at").defaultNow().notNull(),
 });
 
 // Students table
-export const students = pgTable("students", {
-  id: serial("id").primaryKey(),
-  userId: integer("user_id").notNull().references(() => users.id),
-  studentId: text("student_id").notNull().unique(),
-  grade: text("grade").notNull(),
+export const students = mysqlTable("students", {
+  id: int("id").primaryKey().autoincrement(),
+  userId: int("user_id").notNull().references(() => users.id),
+  studentId: varchar("student_id", { length: 50 }).notNull().unique(),
+  grade: varchar("grade", { length: 20 }).notNull(),
   dateEnrolled: timestamp("date_enrolled").defaultNow().notNull(),
-  status: text("status", { enum: ["active", "inactive", "pending"] }).notNull().default("active"),
-  parentName: text("parent_name"),
-  parentEmail: text("parent_email"),
-  parentPhone: text("parent_phone"),
+  status: mysqlEnum("status", ["active", "inactive", "pending"]).notNull().default("active"),
+  parentName: varchar("parent_name", { length: 100 }),
+  parentEmail: varchar("parent_email", { length: 100 }),
+  parentPhone: varchar("parent_phone", { length: 20 }),
   address: text("address"),
 });
 
 // Courses table
-export const courses = pgTable("courses", {
-  id: serial("id").primaryKey(),
-  code: text("code").notNull().unique(),
-  name: text("name").notNull(),
+export const courses = mysqlTable("courses", {
+  id: int("id").primaryKey().autoincrement(),
+  code: varchar("code", { length: 20 }).notNull().unique(),
+  name: varchar("name", { length: 100 }).notNull(),
   description: text("description"),
-  teacherId: integer("teacher_id").references(() => users.id),
-  credits: integer("credits").notNull(),
-  semester: text("semester"),
-  status: text("status", { enum: ["active", "inactive", "completed"] }).notNull().default("active"),
+  teacherId: int("teacher_id").references(() => users.id),
+  credits: int("credits").notNull(),
+  semester: varchar("semester", { length: 20 }),
+  status: mysqlEnum("status", ["active", "inactive", "completed"]).notNull().default("active"),
 });
 
 // Enrollments table
-export const enrollments = pgTable("enrollments", {
-  id: serial("id").primaryKey(),
-  studentId: integer("student_id").notNull().references(() => students.id),
-  courseId: integer("course_id").notNull().references(() => courses.id),
+export const enrollments = mysqlTable("enrollments", {
+  id: int("id").primaryKey().autoincrement(),
+  studentId: int("student_id").notNull().references(() => students.id),
+  courseId: int("course_id").notNull().references(() => courses.id),
   enrollmentDate: timestamp("enrollment_date").defaultNow().notNull(),
-  status: text("status", { enum: ["enrolled", "dropped", "completed"] }).notNull().default("enrolled"),
+  status: mysqlEnum("status", ["enrolled", "dropped", "completed"]).notNull().default("enrolled"),
 });
 
 // Assignments table
-export const assignments = pgTable("assignments", {
-  id: serial("id").primaryKey(),
-  courseId: integer("course_id").notNull().references(() => courses.id),
-  title: text("title").notNull(),
+export const assignments = mysqlTable("assignments", {
+  id: int("id").primaryKey().autoincrement(),
+  courseId: int("course_id").notNull().references(() => courses.id),
+  title: varchar("title", { length: 100 }).notNull(),
   description: text("description"),
   dueDate: timestamp("due_date").notNull(),
-  maxScore: integer("max_score").notNull().default(100),
-  weight: integer("weight").notNull().default(1),
-  status: text("status", { enum: ["draft", "published", "graded"] }).notNull().default("draft"),
+  maxScore: int("max_score").notNull().default(100),
+  weight: int("weight").notNull().default(1),
+  status: mysqlEnum("status", ["draft", "published", "graded"]).notNull().default("draft"),
 });
 
 // Submissions table
-export const submissions = pgTable("submissions", {
-  id: serial("id").primaryKey(),
-  assignmentId: integer("assignment_id").notNull().references(() => assignments.id),
-  studentId: integer("student_id").notNull().references(() => students.id),
+export const submissions = mysqlTable("submissions", {
+  id: int("id").primaryKey().autoincrement(),
+  assignmentId: int("assignment_id").notNull().references(() => assignments.id),
+  studentId: int("student_id").notNull().references(() => students.id),
   submissionDate: timestamp("submission_date").defaultNow().notNull(),
   content: text("content"),
-  score: integer("score"),
+  score: int("score"),
   feedback: text("feedback"),
-  status: text("status", { enum: ["submitted", "late", "graded", "not_submitted"] }).notNull(),
+  status: mysqlEnum("status", ["submitted", "late", "graded", "not_submitted"]).notNull(),
 });
 
 // Grades table
-export const grades = pgTable("grades", {
-  id: serial("id").primaryKey(),
-  studentId: integer("student_id").notNull().references(() => students.id),
-  courseId: integer("course_id").notNull().references(() => courses.id),
-  score: integer("score").notNull(),
-  grade: text("grade").notNull(),
-  semester: text("semester").notNull(),
+export const grades = mysqlTable("grades", {
+  id: int("id").primaryKey().autoincrement(),
+  studentId: int("student_id").notNull().references(() => students.id),
+  courseId: int("course_id").notNull().references(() => courses.id),
+  score: int("score").notNull(),
+  grade: varchar("grade", { length: 5 }).notNull(),
+  semester: varchar("semester", { length: 20 }).notNull(),
   notes: text("notes"),
 });
 
 // Attendance table
-export const attendance = pgTable("attendance", {
-  id: serial("id").primaryKey(),
-  studentId: integer("student_id").notNull().references(() => students.id),
-  courseId: integer("course_id").notNull().references(() => courses.id),
+export const attendance = mysqlTable("attendance", {
+  id: int("id").primaryKey().autoincrement(),
+  studentId: int("student_id").notNull().references(() => students.id),
+  courseId: int("course_id").notNull().references(() => courses.id),
   date: timestamp("date").notNull(),
-  status: text("status", { enum: ["present", "absent", "late", "excused"] }).notNull(),
+  status: mysqlEnum("status", ["present", "absent", "late", "excused"]).notNull(),
   notes: text("notes"),
 });
 
 // Activities table for system activities
-export const activities = pgTable("activities", {
-  id: serial("id").primaryKey(),
-  userId: integer("user_id").references(() => users.id),
-  activityType: text("activity_type").notNull(),
+export const activities = mysqlTable("activities", {
+  id: int("id").primaryKey().autoincrement(),
+  userId: int("user_id").references(() => users.id),
+  activityType: varchar("activity_type", { length: 50 }).notNull(),
   description: text("description").notNull(),
   timestamp: timestamp("timestamp").defaultNow().notNull(),
   metadata: json("metadata"),
