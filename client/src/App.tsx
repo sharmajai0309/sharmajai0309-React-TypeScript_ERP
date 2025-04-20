@@ -18,6 +18,7 @@ function Router() {
     <Switch>
       <Route path="/auth" component={AuthPage} />
       <ProtectedRoute path="/" component={Dashboard} />
+      <ProtectedRoute path="/dashboard" component={Dashboard} /> {/* Added an additional route */}
       <ProtectedRoute path="/students" component={Students} />
       <ProtectedRoute path="/courses" component={Courses} />
       <ProtectedRoute path="/grades" component={Grades} />
